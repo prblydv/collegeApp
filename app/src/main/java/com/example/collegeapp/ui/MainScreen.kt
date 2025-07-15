@@ -19,13 +19,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import com.example.collegeapp.model.TabItem
+import com.example.collegeapp.ui.NewsScreen
 
 @Composable
 fun MainScreen() {
     val tabs = listOf(
+        TabItem("News", Icons.Filled.Notifications),   // <-- Add this line
         TabItem("Online Payment", Icons.Filled.Payment),
         TabItem("Courses", Icons.AutoMirrored.Filled.MenuBook),
         TabItem("Web Registration", Icons.Filled.Language),
@@ -140,10 +143,11 @@ fun MainScreen() {
                 contentAlignment = Alignment.TopCenter
             ) {
                 when (selectedTabIndex) {
-                    0 -> OnlinePaymentScreen()
-                    1 -> CoursesScreen()
-                    2 -> WebRegistrationScreen()
-                    3 -> LoginScreen()
+                    0 -> NewsScreen()            // <-- Add this line
+                    1 -> OnlinePaymentScreen()
+                    2 -> CoursesScreen()
+                    3 -> WebRegistrationScreen()
+                    4 -> LoginScreen()
                 }
             }
         }
