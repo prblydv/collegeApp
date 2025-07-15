@@ -1,4 +1,10 @@
 package com.example.collegeapp.model
 
-class TeacherProfile {
-}
+data class TeacherProfile(
+    val uid: String = "",
+    val name: String = "",
+    val email: String = "",
+    val subject: String = "",
+    val teacherId: String = "",
+    val status: String = "pending"
+)

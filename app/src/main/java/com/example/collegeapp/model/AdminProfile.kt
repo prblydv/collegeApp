@@ -1,4 +1,6 @@
 package com.example.collegeapp.model
 
-class AdminProfile {
-}
+data class AdminProfile(
+    val name: String,
+    val email: String
+)

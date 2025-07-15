@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.collegeapp"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -42,8 +42,8 @@ android {
 }
 
 dependencies {
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.material:material:1.6.7") // Use latest version if available
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material) // Use latest version if available
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -66,6 +66,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.google.firebase.bom))
+    implementation(libs.firebase.analytics)
+    // In app/build.gradle:
+    implementation(platform(libs.google.firebase.bom))
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.firestore.ktx)
+
 }

@@ -147,7 +147,7 @@ fun MainScreen() {
                     1 -> OnlinePaymentScreen()
                     2 -> CoursesScreen()
                     3 -> WebRegistrationScreen()
-                    4 -> LoginScreen()
+                    4 -> LoginTabScreen()
                 }
             }
         }
