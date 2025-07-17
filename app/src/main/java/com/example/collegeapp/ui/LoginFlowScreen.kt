@@ -16,7 +16,6 @@ fun LoginFlowScreen() {
         when (role) {
             "student" -> StudentLoginAndRegisterScreen()
             "teacher" -> TeacherLoginAndRegisterScreen()
-            "admin" -> AdminLoginAndRegisterScreen()
         }
     }
 }

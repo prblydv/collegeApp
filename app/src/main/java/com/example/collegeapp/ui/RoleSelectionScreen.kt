@@ -114,17 +114,6 @@ fun RoleSelectionScreen(onRoleSelected: (String) -> Unit) {
         ) {
             Text("Teacher", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
-        Button(
-            onClick = { onRoleSelected("admin") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 38.dp, vertical = 5.dp)
-                .height(48.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = buttonColors,
-            elevation = ButtonDefaults.elevation(8.dp)
-        ) {
-            Text("Admin", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-        }
+
     }
 }

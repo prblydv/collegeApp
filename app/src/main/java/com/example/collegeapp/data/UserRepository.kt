@@ -6,36 +6,45 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.example.collegeapp.model.TeacherProfile
 import com.google.firebase.firestore.ListenerRegistration
-
+import com.google.firebase.functions.FirebaseFunctions
+import kotlinx.coroutines.tasks.await
 class UserRepository {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    // Register student
-    suspend fun registerStudent(profile: StudentProfile, password: String): String? {
-        return try {
-            val result = auth.createUserWithEmailAndPassword(profile.email, password).await()
-            val uid = result.user?.uid ?: return "Registration failed"
-            val studentWithUid = profile.copy(uid = uid)
-            db.collection("students").document(uid).set(studentWithUid).await()
-            null
-        } catch (e: Exception) {
-            e.localizedMessage
-        }
-    }
 
-    // Login existing student
     suspend fun registerStudentPending(profile: StudentProfile, password: String): String? {
+        // Get FCM token if needed here
+        val data = hashMapOf(
+            "name" to profile.name,
+            "fatherName" to profile.fatherName,
+            "motherName" to profile.motherName,
+            "address" to profile.address,
+            "pincode" to profile.pincode,
+            "aadhaar" to profile.aadhaar,
+            "clas" to profile.clas,
+            "rollNumber" to profile.rollNumber,
+            "dob" to profile.dob,
+            "mobile" to profile.mobile,
+            "email" to profile.email,
+            "password" to password,
+            "fcmToken" to profile.fcmToken  // make sure this is set!
+        )
+
         return try {
-            val result = auth.createUserWithEmailAndPassword(profile.email, password).await()
-            val uid = result.user?.uid ?: return "Registration failed"
-            val studentWithUid = profile.copy(uid = uid)
-            db.collection("pending_students").document(uid).set(studentWithUid).await()
-            null // success
+            val functions = FirebaseFunctions.getInstance()
+            val result = functions
+                .getHttpsCallable("registerPendingStudent")
+                .call(data)
+                .await()
+            null // Success: no error
         } catch (e: Exception) {
             e.message
         }
     }
+
+
+
     suspend fun loginStudent(email: String, password: String): Pair<String?, StudentProfile?> {
         return try {
             val result = auth.signInWithEmailAndPassword(email, password).await()

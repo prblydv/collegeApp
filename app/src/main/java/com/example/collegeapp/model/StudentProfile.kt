@@ -8,10 +8,12 @@ data class StudentProfile(
     val address: String = "",
     val pincode: String = "",
     val aadhaar: String = "",
+    val clas: String = "",
+    val rollNumber: String = "",
     val dob: String = "",
     val mobile: String = "",
     val email: String = "",
-    val status: String = "pending" // "pending", "approved"
-) {
-
-}
+    val status: String = "pending",  // "pending", "approved"
+    val fcmToken: String = "",       // <--- NEW: for notifications
+    val registrationDate: Long = 0L  // <--- NEW: for admin/sorting
+)
