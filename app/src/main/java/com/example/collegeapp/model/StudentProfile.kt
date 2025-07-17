@@ -12,4 +12,6 @@ data class StudentProfile(
     val mobile: String = "",
     val email: String = "",
     val status: String = "pending" // "pending", "approved"
-)
+) {
+
+}

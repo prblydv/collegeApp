@@ -72,5 +72,7 @@ dependencies {
     implementation(platform(libs.google.firebase.bom))
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
-
+    implementation(platform(libs.firebase.bom.v3270)) // Or latest BOM version
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.firestore)
 }

@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.example.collegeapp.model.TeacherProfile
+import com.google.firebase.firestore.ListenerRegistration
 
 class UserRepository {
     private val auth = FirebaseAuth.getInstance()
@@ -24,18 +25,32 @@ class UserRepository {
     }
 
     // Login existing student
+    suspend fun registerStudentPending(profile: StudentProfile, password: String): String? {
+        return try {
+            val result = auth.createUserWithEmailAndPassword(profile.email, password).await()
+            val uid = result.user?.uid ?: return "Registration failed"
+            val studentWithUid = profile.copy(uid = uid)
+            db.collection("pending_students").document(uid).set(studentWithUid).await()
+            null // success
+        } catch (e: Exception) {
+            e.message
+        }
+    }
     suspend fun loginStudent(email: String, password: String): Pair<String?, StudentProfile?> {
         return try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val uid = result.user?.uid ?: return Pair("Login failed", null)
             val doc = db.collection("students").document(uid).get().await()
             val profile = doc.toObject(StudentProfile::class.java)
-            if (profile != null) Pair(null, profile) else Pair("Profile not found", null)
+            if (profile != null) {
+                Pair(null, profile)
+            } else {
+                Pair("Account not approved yet. Please wait for admin approval.", null)
+            }
         } catch (e: Exception) {
-            Pair(e.localizedMessage, null)
+            Pair(e.message, null)
         }
     }
-
     suspend fun getStudentProfile(): StudentProfile? {
         val uid = auth.currentUser?.uid ?: return null
         val doc = db.collection("students").document(uid).get().await()
@@ -65,6 +80,19 @@ class UserRepository {
             null
         } catch (e: Exception) {
             e.localizedMessage
+        }
+    }
+
+
+    fun listenForApproval(uid: String, onStatusChanged: (String) -> Unit): ListenerRegistration {
+        val db = FirebaseFirestore.getInstance()
+        val docRef = db.collection("students").document(uid)
+        return docRef.addSnapshotListener { snapshot, _ ->
+            if (snapshot != null && snapshot.exists()) {
+                onStatusChanged("approved")
+            } else {
+                onStatusChanged("pending")
+            }
         }
     }
 

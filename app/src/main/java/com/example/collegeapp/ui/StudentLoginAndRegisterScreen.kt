@@ -5,11 +5,11 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.collegeapp.data.UserRepository
 import com.example.collegeapp.model.StudentProfile
 import kotlinx.coroutines.launch
-
 @Composable
 fun StudentLoginAndRegisterScreen() {
     val repo = remember { UserRepository() }
@@ -18,56 +18,75 @@ fun StudentLoginAndRegisterScreen() {
     var isLoggingIn by remember { mutableStateOf(false) }
     var profile by remember { mutableStateOf<StudentProfile?>(null) }
     var approvalPending by remember { mutableStateOf(false) }
+    var pendingEmail by remember { mutableStateOf<String?>(null) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    when {
-        showChoice -> {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Button(
-                    onClick = { isRegistering = true; showChoice = false },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp)
-                ) { Text("I am a New Student") }
-                Button(
-                    onClick = { isLoggingIn = true; showChoice = false },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp)
-                ) { Text("I already have a College Login") }
-            }
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (showChoice) {
+            Button(onClick = { isRegistering = true; showChoice = false }) { Text("Register") }
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = { isLoggingIn = true; showChoice = false }) { Text("Login") }
         }
-        isRegistering -> {
+
+        if (isRegistering) {
             StudentRegistrationForm { form, password ->
                 coroutineScope.launch {
                     errorMsg = null
-                    val err = repo.registerStudent(form, password)
+                    val err = repo.registerStudentPending(form, password)
                     if (err == null) {
                         approvalPending = true
+                        pendingEmail = form.email
+                        isRegistering = false
                     } else {
                         errorMsg = err
                     }
                 }
             }
-            if (errorMsg != null) Text(errorMsg!!, color = MaterialTheme.colors.error)
-            if (approvalPending) ApprovalPendingScreen()
         }
-        isLoggingIn -> {
+
+        if (approvalPending && pendingEmail != null) {
+            WaitingForApprovalScreen(pendingEmail!!)
+        }
+
+        if (isLoggingIn) {
             StudentLoginForm { email, password ->
                 coroutineScope.launch {
                     errorMsg = null
-                    val (err, prof) = repo.loginStudent(email, password)
-                    if (err == null && prof != null) {
-                        if (prof.status == "approved") {
-                            profile = prof
-                        } else {
-                            approvalPending = true
-                        }
+                    val (err, userProfile) = repo.loginStudent(email, password)
+                    if (err == null && userProfile != null) {
+                        profile = userProfile
+                        isLoggingIn = false
                     } else {
                         errorMsg = err
                     }
                 }
             }
-            if (errorMsg != null) Text(errorMsg!!, color = MaterialTheme.colors.error)
-            if (profile != null) StudentProfileView(profile!!)
-            if (approvalPending) ApprovalPendingScreen()
         }
+
+        profile?.let { ShowStudentProfile(it) }
+
+        errorMsg?.let {
+            Text(text = it, color = Color.Red)
+        }
+    }
+}
+
+@Composable
+fun ShowStudentProfile(profile: StudentProfile) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Welcome, ${profile.name}")
+        Spacer(Modifier.height(8.dp))
+        Text("Email: ${profile.email}")
+        Spacer(Modifier.height(8.dp))
+        Text("Mobile: ${profile.mobile}")
+        Spacer(Modifier.height(8.dp))
+        // Add other fields as you like
+        // Example: Text("Aadhaar: ${profile.aadhaar}")
     }
 }

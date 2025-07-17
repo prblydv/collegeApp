@@ -36,15 +36,19 @@ fun TeacherLoginAndRegisterScreen() {
         when (registrationStatus) {
             null -> CircularProgressIndicator()
             "approved" -> TeacherDashboard(profile)
-            "pending" -> ApprovalPendingScreen()
+            "pending" -> ApprovalPendingScreen(
+                email = profile?.email ?: "Your email",
+                repo = repo,
+                onApproved = { /* Optional: refresh screen or reload profile */ }
+            )
             "not_registered" -> TeacherRegistrationForm(onRegister = { formData, password ->
                 coroutineScope.launch {
                     repo.registerTeacher(formData, password)
                     registrationStatus = "pending"
                 }
             })
-
         }
+
     }
 }
 
