@@ -76,4 +76,5 @@ dependencies {
     implementation(platform(libs.firebase.bom.v3270)) // Or latest BOM version
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.firestore)
+    implementation(libs.gson)
 }

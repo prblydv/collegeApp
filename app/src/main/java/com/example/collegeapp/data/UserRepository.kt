@@ -1,5 +1,6 @@
 package com.example.collegeapp.data
 
+import android.widget.Toast
 import com.example.collegeapp.model.StudentProfile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -39,6 +40,7 @@ class UserRepository {
                 .await()
             null // Success: no error
         } catch (e: Exception) {
+
             e.message
         }
     }
