@@ -49,19 +49,20 @@ class UserRepository {
 
     suspend fun loginStudent(email: String, password: String): Pair<String?, StudentProfile?> {
         return try {
-            val result = auth.signInWithEmailAndPassword(email, password).await()
-            val uid = result.user?.uid ?: return Pair("Login failed", null)
-            val doc = db.collection("students").document(uid).get().await()
-            val profile = doc.toObject(StudentProfile::class.java)
-            if (profile != null) {
-                Pair(null, profile)
+            val authResult = auth.signInWithEmailAndPassword(email, password).await()
+            val uid = authResult.user?.uid ?: return Pair("Login failed: UID not found", null)
+            val doc = db.collection("approved_students").document(uid).get().await()
+            if (!doc.exists()) {
+                Pair("Profile not approved yet or does not exist.", null)
             } else {
-                Pair("Account not approved yet. Please wait for admin approval.", null)
+                val profile = doc.toObject(StudentProfile::class.java)
+                Pair(null, profile)
             }
         } catch (e: Exception) {
-            Pair(e.message, null)
+            Pair(e.message ?: "Login failed", null)
         }
     }
+
     suspend fun getStudentProfile(): StudentProfile? {
         val uid = auth.currentUser?.uid ?: return null
         val doc = db.collection("students").document(uid).get().await()

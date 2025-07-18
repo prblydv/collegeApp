@@ -1,5 +1,6 @@
 package com.example.collegeapp.ui
 
+import android.util.Log
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
@@ -27,6 +28,7 @@ import com.example.collegeapp.ui.NewsScreen
 
 @Composable
 fun MainScreen() {
+
     val tabs = listOf(
         TabItem("News", Icons.Filled.Notifications),   // <-- Add this line
         TabItem("Online Payment", Icons.Filled.Payment),

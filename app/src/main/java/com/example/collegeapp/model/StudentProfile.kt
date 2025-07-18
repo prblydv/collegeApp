@@ -15,5 +15,7 @@ data class StudentProfile(
     val email: String = "",
     val status: String = "pending",  // "pending", "approved"
     val fcmToken: String = "",       // <--- NEW: for notifications
-    val registrationDate: Long = 0L  // <--- NEW: for admin/sorting
+    val registrationDate: Long = 0L,  // <--- NEW: for admin/sorting
+    val feesPaid: Double = 0.0 // <-- NEW FIELD
+
 )

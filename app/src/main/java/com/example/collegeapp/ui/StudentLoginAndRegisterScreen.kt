@@ -10,19 +10,59 @@ import androidx.compose.ui.unit.dp
 import com.example.collegeapp.data.UserRepository
 import com.example.collegeapp.model.StudentProfile
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
+import android.content.Context
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 @Composable
 fun StudentLoginAndRegisterScreen() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = context.getSharedPreferences("student_prefs", android.content.Context.MODE_PRIVATE)
     val repo = remember { UserRepository() }
     var showChoice by remember { mutableStateOf(true) }
     var isRegistering by remember { mutableStateOf(false) }
     var isLoggingIn by remember { mutableStateOf(false) }
     var profile by remember { mutableStateOf<StudentProfile?>(null) }
-    var approvalPending by remember { mutableStateOf(false) }
-    var pendingEmail by remember { mutableStateOf<String?>(null) }
+
     var errorMsg by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val isLoggedIn = prefs.getBoolean("is_logged_in", false)
+    val loggedInUid = prefs.getString("logged_in_uid", null)
+    var autoLoadProfile by remember { mutableStateOf(false) }
 
+    LaunchedEffect(isLoggedIn, loggedInUid) {
+        // Only run if the user is logged in but no profile loaded yet
+        if (isLoggedIn && loggedInUid != null && profile == null) {
+            autoLoadProfile = true
+            try {
+                val doc = FirebaseFirestore.getInstance()
+                    .collection("approved_students")
+                    .document(loggedInUid)
+                    .get()
+                    .await()
+                val loadedProfile = doc.toObject(StudentProfile::class.java)
+                if (loadedProfile != null) {
+                    profile = loadedProfile
+                }
+            } catch (e: Exception) {
+                // Optionally handle error
+            }
+            autoLoadProfile = false
+        }
+    }
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        if ((isLoggedIn && profile != null) || profile != null) {
+            ShowStudentProfile(profile!!) {
+                // On Logout: clear prefs and state
+                prefs.edit().clear().apply()
+                profile = null
+                showChoice = true
+                isLoggingIn = false
+                isRegistering = false
+                com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+            }
+            return@Column // Only show profile if logged in
+        }
         if (showChoice) {
             Button(onClick = { isRegistering = true; showChoice = false }) { Text("Register") }
             Spacer(Modifier.height(16.dp))
@@ -35,9 +75,10 @@ fun StudentLoginAndRegisterScreen() {
                     errorMsg = null
                     val err = repo.registerStudentPending(form, password)
                     if (err == null) {
-                        approvalPending = true
-                        pendingEmail = form.email
+                        showChoice = false
                         isRegistering = false
+                        isLoggingIn = true // Show login form immediately
+                        errorMsg = "Registration successful! Please login after admin approval."
                     } else {
                         errorMsg = err
                     }
@@ -45,9 +86,9 @@ fun StudentLoginAndRegisterScreen() {
             }
         }
 
-        if (approvalPending && pendingEmail != null) {
-            WaitingForApprovalScreen(pendingEmail!!)
-        }
+//        if (approvalPending && pendingEmail != null) {
+//            WaitingForApprovalScreen(pendingEmail!!)
+//        }
 
         if (isLoggingIn) {
             StudentLoginForm { email, password ->
@@ -57,6 +98,11 @@ fun StudentLoginAndRegisterScreen() {
                     if (err == null && userProfile != null) {
                         profile = userProfile
                         isLoggingIn = false
+                        // Save login state
+                        prefs.edit()
+                            .putBoolean("is_logged_in", true)
+                            .putString("logged_in_uid", userProfile.uid)
+                            .apply()
                     } else {
                         errorMsg = err
                     }
@@ -64,7 +110,9 @@ fun StudentLoginAndRegisterScreen() {
             }
         }
 
-        profile?.let { ShowStudentProfile(it) }
+
+
+
 
         errorMsg?.let {
             Text(text = it, color = Color.Red)
@@ -73,20 +121,28 @@ fun StudentLoginAndRegisterScreen() {
 }
 
 @Composable
-fun ShowStudentProfile(profile: StudentProfile) {
+fun ShowStudentProfile(profile: StudentProfile, onLogout: () -> Unit) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Welcome, ${profile.name}")
-        Spacer(Modifier.height(8.dp))
-        Text("Email: ${profile.email}")
-        Spacer(Modifier.height(8.dp))
+        Text("Welcome, ${profile.name}", style = MaterialTheme.typography.h6)
+        Spacer(Modifier.height(16.dp))
+        Text("Roll Number: ${profile.rollNumber}")
+        Text("Class: ${profile.clas}")
+        Text("Father's Name: ${profile.fatherName}")
+        Text("Mother's Name: ${profile.motherName}")
         Text("Mobile: ${profile.mobile}")
-        Spacer(Modifier.height(8.dp))
-        // Add other fields as you like
-        // Example: Text("Aadhaar: ${profile.aadhaar}")
+        Text("Email: ${profile.email}")
+        Text("Fees Paid: ₹${profile.feesPaid}")
+        Spacer(Modifier.height(24.dp))
+        Button(
+            onClick = { onLogout() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Logout")
+        }
     }
 }
