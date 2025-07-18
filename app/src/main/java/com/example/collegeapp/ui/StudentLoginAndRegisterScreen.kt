@@ -75,10 +75,10 @@ fun StudentLoginAndRegisterScreen() {
                     errorMsg = null
                     val err = repo.registerStudentPending(form, password)
                     if (err == null) {
-                        showChoice = false
+                        showChoice = true
                         isRegistering = false
-                        isLoggingIn = true // Show login form immediately
-                        errorMsg = "Registration successful! Please login after admin approval."
+                        isLoggingIn = false // Show login form immediately
+                        errorMsg = null
                     } else {
                         errorMsg = err
                     }
@@ -86,9 +86,7 @@ fun StudentLoginAndRegisterScreen() {
             }
         }
 
-//        if (approvalPending && pendingEmail != null) {
-//            WaitingForApprovalScreen(pendingEmail!!)
-//        }
+
 
         if (isLoggingIn) {
             StudentLoginForm { email, password ->

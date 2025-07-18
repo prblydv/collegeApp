@@ -66,7 +66,7 @@ fun RoleSelectionScreen(onRoleSelected: (String) -> Unit) {
                 }
                 Spacer(Modifier.height(7.dp))
                 Text(
-                    text = "This app's login is strictly for **current Yogiraj College students, teachers, and authorized staff**. If you are not already enrolled, please do not attempt to register.",
+                    text = "This app's login is strictly for **current Yogiraj College students. If you are not already enrolled, please do not attempt to register.",
                     color = Color(0xFF26235C),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -103,18 +103,7 @@ fun RoleSelectionScreen(onRoleSelected: (String) -> Unit) {
         ) {
             Text("Student", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
-        Button(
-            onClick = { onRoleSelected("teacher") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 38.dp, vertical = 5.dp)
-                .height(48.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = buttonColors,
-            elevation = ButtonDefaults.elevation(8.dp)
-        ) {
-            Text("Teacher", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-        }
+
 
     }
 }
