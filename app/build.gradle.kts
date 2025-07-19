@@ -77,4 +77,10 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.firestore)
     implementation(libs.gson)
+    implementation (libs.firebase.storage.ktx)
+    implementation (libs.androidx.activity.compose.v170) // For ActivityResultLauncher if you don't have it yet
+    implementation(libs.ui)
+    implementation(libs.androidx.material.v154)
+    implementation(libs.material3)
+// if using material3
 }
