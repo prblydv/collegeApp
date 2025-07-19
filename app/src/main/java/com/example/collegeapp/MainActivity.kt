@@ -8,10 +8,15 @@ import androidx.compose.material.MaterialTheme
 import com.example.collegeapp.ui.MainScreen
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import com.example.collegeapp.repository.CourseRepository
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CourseRepository.refreshCourses(applicationContext)
+
+        subscribeToCourseUpdates()
+
         setContent {
             MaterialTheme {
                 MainScreen()
@@ -25,9 +30,19 @@ class MainActivity : ComponentActivity() {
                     // Handle the error
                 }
             }
+
     }
 
-
+    private fun subscribeToCourseUpdates() {
+        FirebaseMessaging.getInstance().subscribeToTopic("course_updates")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Subscribed to course_updates topic")
+                } else {
+                    Log.e("FCM", "Failed to subscribe to course_updates", task.exception)
+                }
+            }
+    }
 }
 
 

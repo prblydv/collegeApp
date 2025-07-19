@@ -82,5 +82,6 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.androidx.material.v154)
     implementation(libs.material3)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 // if using material3
 }
