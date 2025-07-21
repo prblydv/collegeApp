@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun WebRegistrationScreen() {
+fun NewAdmissionScreen() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(Icons.Filled.Language, contentDescription = "Web Registration", tint = MaterialTheme.colors.primary, modifier = Modifier.size(50.dp))
         Spacer(Modifier.height(12.dp))

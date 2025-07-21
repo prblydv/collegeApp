@@ -33,7 +33,7 @@ fun MainScreen() {
         TabItem("News", Icons.Filled.Notifications),   // <-- Add this line
         TabItem("Online Payment", Icons.Filled.Payment),
         TabItem("Courses", Icons.AutoMirrored.Filled.MenuBook),
-        TabItem("Web Registration", Icons.Filled.Language),
+        TabItem("New Admission", Icons.Filled.Language),
         TabItem("Login", Icons.Filled.Person)
     )
     var selectedTabIndex by remember { mutableStateOf(0) }
@@ -148,7 +148,7 @@ fun MainScreen() {
                     0 -> NewsScreen()            // <-- Add this line
                     1 -> OnlinePaymentScreen()
                     2 -> CoursesScreen()
-                    3 -> WebRegistrationScreen()
+                    3 -> NewAdmissionScreen()
                     4 -> LoginTabScreen()
                 }
             }
