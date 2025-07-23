@@ -13,7 +13,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.launch
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 // Data model matches Firestore
 data class NotificationItem(
@@ -24,6 +29,7 @@ data class NotificationItem(
     val body: String = ""
 )
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NewsScreen() {
     val db = FirebaseFirestore.getInstance()
@@ -31,6 +37,8 @@ fun NewsScreen() {
 
     // For expanded view
     var selectedNotificationIndex by remember { mutableStateOf<Int?>(null) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     // Real-time Firestore listener
     DisposableEffect(Unit) {
@@ -51,12 +59,35 @@ fun NewsScreen() {
             }
         onDispose { registration.remove() }
     }
+    fun refreshNotifications() {
+        isRefreshing = true
+        db.collection("notifications")
+            .orderBy("date")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                notifications = snapshot.documents.map { doc ->
+                    NotificationItem(
+                        id = doc.id,
+                        date = doc.getString("date") ?: "",
+                        className = doc.getString("className") ?: "",
+                        subject = doc.getString("subject") ?: "",
+                        body = doc.getString("body") ?: ""
+                    )
+                }
+                isRefreshing = false
+            }
+            .addOnFailureListener {
+                // Optional: Handle error
+                isRefreshing = false
+            }
+    }
 
     // UI
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
+
         Icon(
             Icons.Filled.Notifications,
             contentDescription = "Notifications",
@@ -71,6 +102,7 @@ fun NewsScreen() {
         )
         Spacer(Modifier.height(18.dp))
 
+
         if (notifications.isEmpty()) {
             Text(
                 "No notifications available.",
@@ -79,40 +111,53 @@ fun NewsScreen() {
                 color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
             )
         } else if (selectedNotificationIndex == null) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(8.dp)
+            val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+
+            SwipeRefresh(
+                state = swipeRefreshState,
+                onRefresh = {
+                    coroutineScope.launch { refreshNotifications() }
+                }
             ) {
-                items(notifications.size) { index ->
-                    val notification = notifications[index]
-                    Card(
-                        elevation = 2.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable { selectedNotificationIndex = index }
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                notification.subject,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                notification.body.take(50) + if (notification.body.length > 50) "..." else "",
-                                fontSize = 14.sp
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                "Class: ${notification.className}  •  Date: ${notification.date}",
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colors.primary
-                            )
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(notifications.size) { index ->
+                        val notification = notifications[index]
+                        Card(
+                            elevation = 2.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { selectedNotificationIndex = index }
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    notification.subject,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    notification.body.take(50) + if (notification.body.length > 50) "..." else "",
+                                    fontSize = 14.sp
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "Class: ${notification.className}  •  Date: ${notification.date}",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colors.primary
+                                )
+
+                            }
                         }
                     }
                 }
+
             }
+
         } else {
             val notification = notifications[selectedNotificationIndex!!]
             Card(

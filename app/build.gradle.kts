@@ -83,5 +83,5 @@ dependencies {
     implementation(libs.androidx.material.v154)
     implementation(libs.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-// if using material3
+    implementation(libs.accompanist.swiperefresh.v0332alpha)// if using material3
 }
