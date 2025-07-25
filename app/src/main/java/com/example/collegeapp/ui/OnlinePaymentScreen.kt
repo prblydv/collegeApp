@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 // --------- FIRESTORE SUBMISSION FUNCTION ----------
 import com.google.firebase.functions.ktx.functions
-import com.google.firebase.ktx.Firebase
 import androidx.compose.runtime.key
 import com.example.collegeapp.model.StudentProfile
 import androidx.compose.foundation.rememberScrollState
@@ -33,6 +32,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.Firebase
+import com.google.firebase.functions.functions
 import java.io.InputStream
 
 fun uriToBase64(context: Context, uri: Uri): String? {

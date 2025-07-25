@@ -4,6 +4,8 @@ accompanistSwiperefreshVersion = "0.33.2-alpha"
 activityComposeVersion = "1.7.0"
 agp = "8.11.1"
 androidxMaterial = "1.5.4"
+firebaseAppcheckDebug = "19.0.0"
+firebaseAppcheckPlayintegrity = "19.0.0"
 firebaseBom = "32.7.0"
 firebaseBomVersion = "33.16.0"
 gson = "2.13.1"
@@ -41,13 +43,18 @@ androidx-material-pullrefresh = { module = "androidx.compose.material:material-p
 androidx-material-v154 = { module = "androidx.compose.material:material", version.ref = "androidxMaterial" }
 androidx-material3-pullrefresh = { module = "androidx.compose.material3:material3-pullrefresh", version.ref = "material3Pullrefresh" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
+firebase-appcheck-debug = { module = "com.google.firebase:firebase-appcheck-debug", version.ref = "firebaseAppcheckDebug" }
+firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity", version.ref = "firebaseAppcheckPlayintegrity" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-bom-v3270 = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx" }
+google-firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
+google-firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

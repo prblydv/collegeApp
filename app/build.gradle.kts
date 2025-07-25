@@ -36,6 +36,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
         viewBinding = true
     }
@@ -84,4 +85,9 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.accompanist.swiperefresh.v0332alpha)// if using material3
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.analytics.ktx)
+    implementation(libs.google.firebase.auth.ktx)
+    implementation(libs.google.firebase.firestore.ktx)
+    implementation(libs.firebase.appcheck.debug)
 }

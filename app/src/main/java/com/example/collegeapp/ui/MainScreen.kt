@@ -1,12 +1,12 @@
 package com.example.collegeapp.ui
 
 import android.util.Log
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,39 +19,129 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material.icons.filled.Brightness3
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.ui.draw.shadow
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.ui.text.font.FontWeight
 import com.example.collegeapp.model.TabItem
-import com.example.collegeapp.ui.NewsScreen
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.times
+
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
+
+val barHeight = 70.dp  // Instagram-like is typically 64–72dp
+val pillCornerRadius = 28.dp // For a more pill-like appearance
 
 @Composable
-fun MainScreen() {
+fun SlidingPillNavBarWithIcons(
+    tabs: List<TabItem>,
+    selectedIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    pillColor: Color = Color.Black,
+    backgroundColor: Color = Color.White,
+    contentColor: Color = Color.Black
+) {
+    val itemWidth: Dp = 74.dp
+    val animatedOffset by animateDpAsState(
+        targetValue = selectedIndex * itemWidth,
+        animationSpec = tween(durationMillis = 320)
+    )
+    val insets = WindowInsets.navigationBars.asPaddingValues() // for gesture bar
 
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(barHeight)
+            .padding(bottom = insets.calculateBottomPadding().coerceAtLeast(10.dp))
+            .clip(RoundedCornerShape(22.dp))
+            .background(backgroundColor)
+    ) {
+        // Sliding pill
+        Box(
+            Modifier
+                .offset(x = animatedOffset)
+                .size(width = itemWidth, height = barHeight)
+                .clip(RoundedCornerShape(22.dp))
+                .background(pillColor)
+        )
+        // Row of tab icons
+        Row(
+            Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                Box(
+                    Modifier
+                        .width(itemWidth)
+                        .fillMaxHeight()
+                        .clickable { onTabSelected(index) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = tab.icon,
+                        contentDescription = tab.label,
+                        tint = if (selectedIndex == index)
+                            MaterialTheme.colors.onPrimary
+                        else
+                            MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+) {
     val tabs = listOf(
-        TabItem("News", Icons.Filled.Notifications),   // <-- Add this line
+        TabItem("News", Icons.Filled.Notifications),
         TabItem("Online Payment", Icons.Filled.Payment),
         TabItem("Courses", Icons.AutoMirrored.Filled.MenuBook),
         TabItem("New Admission", Icons.Filled.Language),
         TabItem("Login", Icons.Filled.Person)
     )
     var selectedTabIndex by remember { mutableStateOf(0) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    listOf(
-                        MaterialTheme.colors.primary.copy(alpha = 0.10f),
-                        Color.White
-                    )
+    var showInfoDialog by remember { mutableStateOf(false) }
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text("College Information") },
+            text = {
+                Text(
+                    "Address:\nGT Road Bypass Bhongaon Mainpuri, UP, India 205262\n\n" +
+                            "Contact:\n8384843193"
                 )
-            )
-    ) {
-        Column {
-            // HEADER (Logo + College Name)
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfoDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            // College header
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -72,85 +162,60 @@ fun MainScreen() {
                         .padding(horizontal = 24.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // App Icon Circle with Y letter (replace with logo as needed)
-                    Box(
-                        modifier = Modifier
-                            .size(54.dp)
-                            .background(Color.White.copy(alpha = 0.25f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Y",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colors.onPrimary
-                        )
-                    }
+
                     Spacer(Modifier.width(16.dp))
-                    Text(
-                        text = "YOGIRAJ COLLEGE",
-                        color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
+                    AnimatedNameSplash(
+                        fullName = "YOGIRAJ S. COLLEGE",
+                        textColor = Color.White,
+                        fontSize = 22,
                         modifier = Modifier.weight(1f)
                     )
+                    IconButton(onClick = { showInfoDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = "Info",
+                            tint = Color.White
+                        )
+                    }
+
+                    IconButton(onClick = onToggleTheme) {
+                        Icon(
+                            imageVector = if (isDarkTheme) Icons.Filled.WbSunny else Icons.Filled.Brightness3,
+                            contentDescription = "Toggle Theme",
+                            tint = Color.White
+                        )
+                    }
+
                 }
             }
+        },
+        bottomBar = {
+            SlidingPillNavBarWithIcons(
+                tabs = tabs,
+                selectedIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it },
+                modifier = Modifier
+                    .padding(horizontal = 14.dp)
+                    .fillMaxWidth(),
+                pillColor = MaterialTheme.colors.primary,
+                backgroundColor = if (MaterialTheme.colors.isLight) Color.White else Color(0xFF23242A),
+                contentColor = if (MaterialTheme.colors.isLight) Color.Black else Color.White
+            )
+        }
 
-            // Tabs (Modern Card look)
-            ScrollableTabRow(
-                selectedTabIndex = selectedTabIndex,
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        Modifier
-                            .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                            .height(4.dp)
-                            .padding(horizontal = 28.dp),
-                        color = MaterialTheme.colors.primary
-                    )
-                },
-                edgePadding = 8.dp,
-                backgroundColor = Color.Transparent
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        icon = {
-                            Icon(tab.icon, contentDescription = tab.label)
-                        },
-                        text = {
-                            Text(
-                                tab.label,
-                                fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTabIndex == index) MaterialTheme.colors.primary else Color.Gray
-                            )
-                        },
-                        modifier = Modifier
-                            .height(60.dp)
-                            .padding(vertical = 6.dp)
-                    )
-                }
-            }
-
-            // Main Content (card, padding, elevation)
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(24.dp)
-                    .shadow(2.dp, RoundedCornerShape(18.dp))
-                    .background(Color.White, RoundedCornerShape(18.dp))
-                    .padding(24.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                when (selectedTabIndex) {
-                    0 -> NewsScreen()            // <-- Add this line
-                    1 -> OnlinePaymentScreen()
-                    2 -> CoursesScreen()
-                    3 -> NewAdmissionScreen()
-                    4 -> LoginTabScreen()
-                }
+    ) { paddingValues ->
+        // Content area, stretched edge-to-edge
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (selectedTabIndex) {
+                0 -> NewsScreen()
+                1 -> OnlinePaymentScreen()
+                2 -> CoursesScreen()
+                3 -> NewAdmissionScreen()
+                4 -> LoginTabScreen()
             }
         }
     }

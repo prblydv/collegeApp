@@ -13,7 +13,11 @@ import androidx.compose.runtime.*
 import com.example.collegeapp.repository.CourseRepository
 import com.example.collegeapp.ui.MainScreen
 import com.google.firebase.messaging.FirebaseMessaging
-
+import androidx.core.content.edit
+import com.example.collegeapp.ui.AnimatedNameSplash
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -24,15 +28,45 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // -- App Check initialization: must come before using any Firebase APIs!
+        val firebaseAppCheck = FirebaseAppCheck.getInstance()
+        firebaseAppCheck.installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
         CourseRepository.refreshCourses(applicationContext)
         subscribeToCourseUpdates()
 
         setContent {
-            MaterialTheme {
-                NotificationPermissionMainScreen()
+            var showSplash by remember { mutableStateOf(false) }
+
+            if (showSplash) {
+                // Show your animated logo splash
+                AnimatedNameSplash()
+
+            } else {
+                // Your existing app content starts here
+                val context = this
+                var isDark by remember {
+                    mutableStateOf(
+                        context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                            .getBoolean("dark_mode", false)
+                    )
+                }
+
+                com.example.collegeapp.ui.theme.CollegeAppTheme(darkTheme = isDark) {
+                    NotificationPermissionMainScreen(
+                        isDarkTheme = isDark,
+                        onToggleTheme = {
+                            isDark = !isDark
+                            context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                                .edit {
+                                    putBoolean("dark_mode", isDark)
+                                }
+                        }
+                    )
+                }
             }
         }
-
         FirebaseMessaging.getInstance().subscribeToTopic("all")
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -56,7 +90,10 @@ class MainActivity : ComponentActivity() {
 
     // This composable wraps MainScreen and handles the dialog logic
     @Composable
-    fun NotificationPermissionMainScreen() {
+    fun NotificationPermissionMainScreen(
+        isDarkTheme: Boolean,
+        onToggleTheme: () -> Unit
+    ) {
         val context = this@MainActivity
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         var showPermissionDialog by remember {
@@ -97,7 +134,10 @@ class MainActivity : ComponentActivity() {
         }
 
         // Your original MainScreen
-        MainScreen()
+        MainScreen(
+            isDarkTheme = isDarkTheme,
+            onToggleTheme = onToggleTheme
+        )
     }
 }
 
