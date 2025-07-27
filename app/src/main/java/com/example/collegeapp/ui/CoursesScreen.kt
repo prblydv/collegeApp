@@ -78,9 +78,9 @@ fun CourseItem(course: Course, highlight: Boolean, context: Context) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(course.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("Syllabus: ${course.syllabus}")
+            Text("Subjects: ${course.syllabus}")
             Text("Fees: ₹${course.courseFees} + ₹${course.webRegistrationFees} Web Registration")
-            if (course.name != "BA" && course.name != "BSc") {
+            if (course.name != "BA" && course.name != "BSc"&& course.name != "B.Ed"&&  course.name != "Del.Ed") {
                 Text("Seats: ${course.filledSeats}/${course.totalSeats}")
             }
             if (course.infoNotes.isNotBlank()) {

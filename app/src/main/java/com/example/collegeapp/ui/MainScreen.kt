@@ -35,6 +35,11 @@ import androidx.compose.material.Text
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.times
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
@@ -42,6 +47,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import com.example.collegeapp.R
 
 val barHeight = 70.dp  // Instagram-like is typically 64–72dp
 val pillCornerRadius = 28.dp // For a more pill-like appearance
@@ -127,8 +133,9 @@ fun MainScreen(
             title = { Text("College Information") },
             text = {
                 Text(
-                    "Address:\nGT Road Bypass Bhongaon Mainpuri, UP, India 205262\n\n" +
-                            "Contact:\n8384843193"
+                    "Yogiraj Shri Krishna Mahavidyalaya \n (Affiliated by DBRAU, Agra)\n\n"+
+                            "Address:\nGT Road Bypass Bhongaon Dist: Mainpuri, UP, India 205262\n\n" +
+                            "Contact:\n8384843193 \n8126318967"
                 )
             },
             confirmButton = {
@@ -154,22 +161,29 @@ fun MainScreen(
                         ),
                         shape = RoundedCornerShape(bottomEnd = 32.dp, bottomStart = 32.dp)
                     )
-                    .padding(top = 32.dp, bottom = 24.dp)
+                    .padding(top = 24.dp, bottom = 24.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    Spacer(Modifier.width(16.dp))
-                    AnimatedNameSplash(
-                        fullName = "YOGIRAJ S. COLLEGE",
-                        textColor = Color.White,
-                        fontSize = 22,
-                        modifier = Modifier.weight(1f)
+                    Image(
+                        painter = painterResource(R.drawable.college_logo3),
+                        contentDescription = "College logo",
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)      // optional: makes it round
                     )
+                    Spacer(Modifier.width(8.dp))
+                    AnimatedNameSplash(
+                        fullName = "YOGIRAJ",
+                        textColor = Color.White,
+                        fontSize = 32,
+                        modifier = Modifier
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = { showInfoDialog = true }) {
                         Icon(
                             imageVector = Icons.Filled.Info,
