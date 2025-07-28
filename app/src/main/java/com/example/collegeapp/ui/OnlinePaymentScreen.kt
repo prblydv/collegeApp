@@ -18,13 +18,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.example.collegeapp.model.PaymentModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-// --------- FIRESTORE SUBMISSION FUNCTION ----------
-import com.google.firebase.functions.ktx.functions
 import androidx.compose.runtime.key
 import com.example.collegeapp.model.StudentProfile
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-
 
 import android.content.Context
 import android.util.Base64
@@ -53,6 +50,7 @@ fun uriToBase64(context: Context, uri: Uri): String? {
 
 @Composable
 fun OnlinePaymentScreen() {
+
     var studentProfile by remember { mutableStateOf<StudentProfile?>(null) }
 
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -179,32 +177,28 @@ fun OnlinePaymentScreen() {
                     )
                 }
             } else {
-                key(showSuccess) {
-                    NotLoggedInPaymentForm(
-                        isSubmitting = isSubmitting,
-                        errorMsg = errorMsg,
-                        onSubmit = { name, clas, roll, email, amount, proofUrl ->
-                            coroutineScope.launch {
-                                isSubmitting = true
-                                errorMsg = null
-                                val payment = PaymentModel(
-                                    name = name,
-                                    clas = clas,
-                                    rollNumber = roll,
-                                    email = email,
-                                    amountPaid = amount,
-                                    paymentProofUrl = proofUrl,
-                                )
-                                val result = submitPaymentViaCloudFunction(payment)
-                                if (result == null) {
-                                    showSuccess = true
-                                } else {
-                                    errorMsg = result
-                                }
-                                isSubmitting = false
-                            }
-                        }
-                    )
+                Card(
+                    elevation = 6.dp,
+                    modifier = Modifier
+                        .padding(32.dp)
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Log in to complete your payment",
+                            style = MaterialTheme.typography.h6
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Please sign in from your Profile tab first.",
+                            style = MaterialTheme.typography.body2
+                        )
+                    }
                 }
             }
         }
@@ -268,181 +262,6 @@ fun LoggedInPaymentForm(
 }
 
 
-// --------- NOT LOGGED-IN FORM ----------
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun NotLoggedInPaymentForm(
-    isSubmitting: Boolean,
-    errorMsg: String?,
-    onSubmit: (String, String, String, String, Double, String) -> Unit
-) {
-    val classOptions = listOf("BA", "BSc", "BEd", "DElEd")
-
-    var name by remember { mutableStateOf("") }
-    var selectedClass by remember { mutableStateOf("") }
-    var roll by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var proofUrl by remember { mutableStateOf("") }
-
-    // Error states
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var classError by remember { mutableStateOf<String?>(null) }
-    var rollError by remember { mutableStateOf<String?>(null) }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var amountError by remember { mutableStateOf<String?>(null) }
-
-    // Dropdown state
-    var expanded by remember { mutableStateOf(false) }
-
-    fun isValidName(name: String): Boolean =
-        name.trim().matches(Regex("^[A-Za-z ]+$"))
-
-    fun isValidRollNumber(roll: String): Boolean =
-        roll.trim().matches(Regex("^\\d+$"))
-
-    fun isValidEmail(email: String): Boolean =
-        android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
-
-    fun isValidAmount(amount: String): Boolean =
-        amount.trim().toDoubleOrNull()?.let { it > 0 } == true
-
-    val isFormValid = name.isNotBlank() && isValidName(name) &&
-            selectedClass.isNotBlank() &&
-            roll.isNotBlank() && isValidRollNumber(roll) &&
-            email.isNotBlank() && isValidEmail(email) &&
-            amount.isNotBlank() && isValidAmount(amount) &&
-            proofUrl.isNotBlank()
-
-    Text("Enter your details to submit payment:")
-
-    OutlinedTextField(
-        value = name,
-        onValueChange = {
-            name = it.trimStart()
-            nameError = if (name.isBlank() || isValidName(name)) null else "Only letters and spaces allowed"
-        },
-        label = { Text("Name") },
-        enabled = !isSubmitting,
-        isError = nameError != null,
-        singleLine = true
-    )
-    nameError?.let { Text(it, color = MaterialTheme.colors.error, fontSize = 12.sp) }
-
-    // CLASS DROPDOWN
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        OutlinedTextField(
-            value = selectedClass,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Class") },
-            trailingIcon = {
-                Icon(
-                    imageVector = if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
-                    contentDescription = null
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = !expanded },
-            enabled = !isSubmitting,
-            isError = classError != null
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            classOptions.forEach { option ->
-                DropdownMenuItem(
-                    onClick = {
-                        selectedClass = option
-                        expanded = false
-                        classError = null
-                    }
-                ) {
-                    Text(option)
-                }
-            }
-        }
-    }
-    classError?.let { Text(it, color = MaterialTheme.colors.error, fontSize = 12.sp) }
-
-    OutlinedTextField(
-        value = roll,
-        onValueChange = {
-            roll = it.trimStart()
-            rollError = if (roll.isBlank() || isValidRollNumber(roll)) null else "Numbers only"
-        },
-        label = { Text("Roll Number") },
-        enabled = !isSubmitting,
-        isError = rollError != null,
-        singleLine = true,
-    )
-    rollError?.let { Text(it, color = MaterialTheme.colors.error, fontSize = 12.sp) }
-
-    OutlinedTextField(
-        value = email,
-        onValueChange = {
-            email = it.trim()
-            emailError = if (email.isBlank() || isValidEmail(email)) null else "Invalid email"
-        },
-        label = { Text("Email") },
-        enabled = !isSubmitting,
-        isError = emailError != null,
-        singleLine = true,
-    )
-    emailError?.let { Text(it, color = MaterialTheme.colors.error, fontSize = 12.sp) }
-
-    OutlinedTextField(
-        value = amount,
-        onValueChange = {
-            amount = it.trim()
-            amountError = if (amount.isBlank() || isValidAmount(amount)) null else "Enter a valid amount"
-        },
-        label = { Text("Amount (₹)") },
-        enabled = !isSubmitting,
-        isError = amountError != null,
-        singleLine = true,
-    )
-    amountError?.let { Text(it, color = MaterialTheme.colors.error, fontSize = 12.sp) }
-    Spacer(Modifier.height(16.dp))
-    Text("Send payment to:")
-    Text("UPI ID: 8384843193@boi", fontWeight = FontWeight.Bold)
-    Spacer(Modifier.height(12.dp))
-
-    ScreenshotPicker(enabled = !isSubmitting) { url -> proofUrl = url }
-
-    errorMsg?.let {
-        Text(it, color = MaterialTheme.colors.error)
-        Spacer(Modifier.height(8.dp))
-    }
-
-    if (isSubmitting) {
-        CircularProgressIndicator()
-        Spacer(Modifier.height(16.dp))
-    }
-
-    Spacer(Modifier.height(24.dp))
-    Button(
-        enabled = isFormValid && !isSubmitting,
-        onClick = {
-            onSubmit(
-                name.trim(),
-                selectedClass,
-                roll.trim(),
-                email.trim(),
-                amount.trim().toDoubleOrNull() ?: 0.0,
-                proofUrl.trim()
-            )
-        }
-    ) {
-        Text(if (isSubmitting) "Submitting..." else "Submit Payment")
-    }
-}
 
 
 @Composable
